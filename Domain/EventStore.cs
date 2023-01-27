@@ -5,8 +5,8 @@ namespace System
 {
     public class EventStore<T> : EventStore, IEventStore<T>
     {
-        public EventStore(CosmosClient client, string database, string container, EventStoreOptions options = null) : base(client, database, container, options)
-        {
-        }
+        public EventStore(CosmosClient client, string database, string container, EventStoreOptions? options = null)
+            : base(client, database, container, options)
+        { }
     }
 }

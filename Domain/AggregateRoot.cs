@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.CSharp.RuntimeBinder;
+using System;
 using System.Collections.Generic;
-using Microsoft.CSharp.RuntimeBinder;
 using System.Runtime.ExceptionServices;
 
 namespace Domain

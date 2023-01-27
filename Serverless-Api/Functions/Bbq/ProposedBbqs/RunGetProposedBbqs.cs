@@ -1,35 +1,31 @@
-using System.Net;
 using Domain.Entities;
-using Domain.Repositories;
+using Domain.Services.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Net;
 
 namespace Serverless_Api
 {
     public partial class RunGetProposedBbqs
     {
-        private readonly Person _user;
-        private readonly IBbqRepository _bbqs;
-        private readonly IPersonRepository _repository;
-        public RunGetProposedBbqs(IPersonRepository repository, IBbqRepository bbqs, Person user)
+        private readonly Person _person;
+        private readonly IBbqService _bbqService;
+
+        public RunGetProposedBbqs(Person person, IBbqService bbqService)
         {
-            _user = user;
-            _bbqs = bbqs;
-            _repository = repository;
+            _person = person;
+            _bbqService = bbqService;
         }
 
         [Function(nameof(RunGetProposedBbqs))]
         public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "get", Route = "churras")] HttpRequestData req)
         {
-            var snapshots = new List<object>();
-            var moderator = await _repository.GetAsync(_user.Id);
-            foreach (var bbqId in moderator.Invites.Where(i => i.Date > DateTime.Now).Select(o => o.Id).ToList())
-            {
-                var bbq = await _bbqs.GetAsync(bbqId);
-                snapshots.Add(bbq.TakeSnapshot());
-            }
+            var response = await _bbqService.GetProposedBbqs(_person.Id);
 
-            return await req.CreateResponse(HttpStatusCode.Created, snapshots);
+            if (response.IsValid)
+                return await req.CreateResponse(HttpStatusCode.OK, response.Data);
+
+            return await req.CreateResponse(HttpStatusCode.BadRequest, response.Message);
         }
     }
 }

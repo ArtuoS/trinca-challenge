@@ -10,17 +10,20 @@ namespace Domain.Entities
         public string Name { get; set; }
         public bool IsCoOwner { get; set; }
         public IEnumerable<Invite> Invites { get; set; }
+
         public Person()
         {
             Invites = new List<Invite>();
         }
-        public void When(PersonHasBeenCreated @event)
+
+        internal void When(PersonHasBeenCreated @event)
         {
             Id = @event.Id;
             Name = @event.Name;
             IsCoOwner = @event.IsCoOwner;
         }
-        public void When(PersonHasBeenInvitedToBbq @event)
+
+        internal void When(PersonHasBeenInvitedToBbq @event)
         {
             Invites = Invites.Append(new Invite
             {
@@ -31,19 +34,27 @@ namespace Domain.Entities
             });
         }
 
-        public void When(InviteWasAccepted @event)
+        internal void When(InviteWasAccepted @event)
         {
-            var invite = Invites.FirstOrDefault(x => x.Id == @event.InviteId);
+            var invite = Invites.FirstOrDefault(x => x.Id.Equals(@event.InviteId));
+
+            if (invite is null)
+                return;
+
+            // Ajustado pois estava sendo permitido aceitar invites já aceitos.
+            if (invite.Status.Equals(InviteStatus.Accepted))
+                return;
+
             invite.Status = InviteStatus.Accepted;
         }
 
-        public void When(InviteWasDeclined @event)
+        internal void When(InviteWasDeclined @event)
         {
-            var invite = Invites.FirstOrDefault(x => x.Id == @event.InviteId);
-            
-            if (invite == null) 
+            var invite = Invites.FirstOrDefault(x => x.Id.Equals(@event.InviteId));
+
+            if (invite == null)
                 return;
-            
+
             invite.Status = InviteStatus.Declined;
         }
 
@@ -54,9 +65,8 @@ namespace Domain.Entities
                 Id,
                 Name,
                 IsCoOwner,
-                Invites = Invites.Where(o => o.Status != InviteStatus.Declined)
-                                .Where(o => o.Date > DateTime.Now)
-                                .Select(o => new { o.Id, o.Bbq, Status = o.Status.ToString() })
+                Invites = Invites.Where(o => o.Status != InviteStatus.Declined && o.Date > DateTime.Now)
+                                 .Select(o => new { o.Id, o.Bbq, Status = o.Status.ToString() })
             };
         }
     }

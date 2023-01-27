@@ -1,24 +1,28 @@
-﻿using System;
-using Eveneum;
-using System.Linq;
-using CrossCutting;
+﻿using CrossCutting;
 using Domain.Entities;
-using System.Threading.Tasks;
 using Domain.Events;
 using Domain.Repositories;
+using Domain.Services;
+using Domain.Services.Interfaces;
+using Eveneum;
 using Microsoft.Azure.Cosmos;
-using System.Collections.Generic;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Domain
 {
     public static partial class ServiceCollectionExtensions
     {
         private const string DATABASE = "Churras";
+
         public static IServiceCollection AddDomainDependencies(this IServiceCollection services)
             => services.AddSingleton(new Person { Id = "e5c7c990-7d75-4445-b5a2-700df354a6a0" })
                 .AddEventStoreDependencies()
-                .AddRepositoriesDependencies();
+                .AddRepositoriesDependencies()
+                .AddServicesDependencies();
 
         public static IServiceCollection AddEventStoreDependencies(this IServiceCollection services)
         {
@@ -64,7 +68,11 @@ namespace Domain
             => services.AddTransient<IBbqRepository, BbqRepository>()
             .AddTransient<IPersonRepository, PersonRepository>();
 
-        private async static Task CreateIfNotExists(this CosmosClient client, string database, string collection)
+        public static IServiceCollection AddServicesDependencies(this IServiceCollection services)
+            => services.AddTransient<IBbqService, BbqService>()
+            .AddTransient<IPersonService, PersonService>();
+
+        private static async Task CreateIfNotExists(this CosmosClient client, string database, string collection)
         {
             var databaseResponse = await client.CreateDatabaseIfNotExistsAsync(database);
             await databaseResponse.Database.CreateContainerIfNotExistsAsync(new ContainerProperties(collection, "/StreamId"));

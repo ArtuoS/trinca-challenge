@@ -1,5 +1,5 @@
-using Domain;
 using CrossCutting;
+using Domain;
 using Microsoft.Extensions.Hosting;
 using Serverless_Api.Middlewares;
 

@@ -1,40 +1,33 @@
-﻿using Domain;
-using Eveneum;
-using CrossCutting;
-using Domain.Events;
-using Domain.Entities;
-using Domain.Repositories;
+﻿using Domain.Entities;
+using Domain.Enums;
+using Domain.Services.Interfaces;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using static Domain.ServiceCollectionExtensions;
+using static Serverless_Api.RunAcceptInvite;
 
 namespace Serverless_Api
 {
     public partial class RunDeclineInvite
     {
-        private readonly Person _user;
-        private readonly IPersonRepository _repository;
+        private readonly Person _person;
+        private readonly IBbqService _bbqService;
 
-        public RunDeclineInvite(Person user, IPersonRepository repository)
+        public RunDeclineInvite(Person person, IBbqService bbqService)
         {
-            _user = user;
-            _repository = repository;
+            _person = person;
+            _bbqService = bbqService;
         }
 
         [Function(nameof(RunDeclineInvite))]
         public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Function, "put", Route = "person/invites/{inviteId}/decline")] HttpRequestData req, string inviteId)
         {
-            var person = await _repository.GetAsync(_user.Id);
+            var answer = await req.Body<InviteAnswer>() ?? throw new ArgumentNullException(nameof(HttpRequestData));
 
-            if (person == null)
-                return req.CreateResponse(System.Net.HttpStatusCode.NoContent);
+            var response = await _bbqService.HandleBbqInvite(inviteId, _person.Id, answer.IsVeg, BbqInviteType.Decline);
+            if (response.IsValid)
+                return await req.CreateResponse(System.Net.HttpStatusCode.OK, response.Data);
 
-            person.Apply(new InviteWasDeclined { InviteId = inviteId, PersonId = person.Id });
-
-            await _repository.SaveAsync(person);
-            //Implementar impacto da recusa do convite no churrasco caso ele já tivesse sido aceito antes
-
-            return await req.CreateResponse(System.Net.HttpStatusCode.OK, person.TakeSnapshot());
+            return await req.CreateResponse(System.Net.HttpStatusCode.BadRequest, response.Data);
         }
     }
 }

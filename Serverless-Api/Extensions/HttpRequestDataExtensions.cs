@@ -1,12 +1,12 @@
-﻿using System.Net;
+﻿using Microsoft.Azure.Functions.Worker.Http;
 using Newtonsoft.Json;
-using Microsoft.Azure.Functions.Worker.Http;
+using System.Net;
 
 namespace System
 {
     public static class HttpRequestDataExtensions
     {
-        public async static Task<HttpResponseData> CreateResponse(this HttpRequestData req, HttpStatusCode statusCode, object? body)
+        public static async Task<HttpResponseData> CreateResponse(this HttpRequestData req, HttpStatusCode statusCode, object? body)
         {
             var response = req.CreateResponse(statusCode);
 
@@ -17,7 +17,7 @@ namespace System
             return response;
         }
 
-        public async static Task<T?> Body<T>(this HttpRequestData request)
+        public static async Task<T?> Body<T>(this HttpRequestData request)
         {
             string requestBody = await new StreamReader(request.Body).ReadToEndAsync();
 

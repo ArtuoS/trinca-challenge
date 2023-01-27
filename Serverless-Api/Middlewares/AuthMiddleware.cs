@@ -1,16 +1,10 @@
-﻿using System;
-using System.Linq;
-using System.Net;
-using System.Text;
-using Newtonsoft.Json;
-using Domain.Entities;
-using System.Threading.Tasks;
-using Microsoft.Azure.Cosmos;
-using System.Collections.Generic;
+﻿using Domain.Entities;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Azure.Functions.Worker.Middleware;
+using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
+using System.Net;
 
 namespace Serverless_Api.Middlewares
 {
@@ -25,7 +19,7 @@ namespace Serverless_Api.Middlewares
             if (headers == null)
             {
                 context.InvokeResult(context.GetHttpRequestData().CreateResponse(HttpStatusCode.Unauthorized));
-                return; 
+                return;
             }
 
             loggedPerson.Id = JsonConvert.DeserializeObject<Headers>(headers.ToString()).PersonId;

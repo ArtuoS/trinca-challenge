@@ -1,8 +1,8 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.Azure.Cosmos;
-using System.Collections.Generic;
+﻿using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CrossCutting
 {
@@ -21,7 +21,7 @@ namespace CrossCutting
 
     public static class SnapshotStoreExtensions
     {
-        public async static Task<List<T>> ToListAsync<T>(this IQueryable<T> queryable)
+        public static async Task<List<T>> ToListAsync<T>(this IQueryable<T> queryable)
         {
             var snapshots = new List<T>();
 
@@ -36,7 +36,7 @@ namespace CrossCutting
             return snapshots;
         }
 
-        public async static Task<T> SingleOrDefaultAsync<T>(this IQueryable<T> queryable)
+        public static async Task<T> SingleOrDefaultAsync<T>(this IQueryable<T> queryable)
         {
             var feedIterator = queryable.ToFeedIterator();
             while (feedIterator.HasMoreResults)

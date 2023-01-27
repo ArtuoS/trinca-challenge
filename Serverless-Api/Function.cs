@@ -1,20 +1,20 @@
 using Domain;
-using Eveneum;
-using System.Net;
-using Domain.Events;
 using Domain.Entities;
+using Eveneum;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using System.Net;
 
 namespace Serverless_Api
 {
     public class Function
     {
-        private readonly Person _user;
+        private readonly Person _person;
         private readonly IEventStore _eventStore;
-        public Function(IEventStore eventStore, Person user)
+
+        public Function(IEventStore eventStore, Person person)
         {
-            _user = user;
+            _person = person;
             _eventStore = eventStore;
         }
 
@@ -47,7 +47,6 @@ namespace Serverless_Api
             churras.Rehydrate(loadedEvents);
 
             return await req.CreateResponse(HttpStatusCode.Created, churras.TakeSnapshot());
-
         }
     }
 }

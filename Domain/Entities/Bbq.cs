@@ -1,5 +1,7 @@
-﻿using System;
-using Domain.Events;
+﻿using Domain.Events;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Domain.Entities
 {
@@ -9,7 +11,11 @@ namespace Domain.Entities
         public BbqStatus Status { get; set; }
         public DateTime Date { get; set; }
         public bool IsTrincasPaying { get; set; }
-        public void When(ThereIsSomeoneElseInTheMood @event)
+        public List<string> ConfirmedPeople { get; set; } = new List<string>();
+        public BbqCart? BbqCart { get; set; }
+        private int _confirmations => ConfirmedPeople.Count;
+
+        internal void When(ThereIsSomeoneElseInTheMood @event)
         {
             Id = @event.Id.ToString();
             Date = @event.Date;
@@ -17,24 +23,39 @@ namespace Domain.Entities
             Status = BbqStatus.New;
         }
 
-        public void When(BbqStatusUpdated @event)
+        internal void When(BbqStatusUpdated @event)
         {
             if (@event.GonnaHappen)
                 Status = BbqStatus.PendingConfirmations;
-            else 
+            else
                 Status = BbqStatus.ItsNotGonnaHappen;
 
             if (@event.TrincaWillPay)
                 IsTrincasPaying = true;
         }
 
-        public void When(InviteWasDeclined @event)
+        internal void When(InviteWasDeclined @event)
         {
-            //TODO:Deve ser possível rejeitar um convite já aceito antes.
-            //Se este for o caso, a quantidade de comida calculada pelo aceite anterior do convite
-            //deve ser retirado da lista de compras do churrasco.
-            //Se ao rejeitar, o número de pessoas confirmadas no churrasco for menor que sete,
-            //o churrasco deverá ter seu status atualizado para “Pendente de confirmações”. 
+            if (BbqCart is null)
+                BbqCart = new BbqCart(@event.InviteId);
+
+            if (ConfirmedPeople.Any(w => w.Equals(@event.PersonId)))
+                BbqCart.DecreaseQuantitiesByIsVeg(@event.IsVeg);
+
+            if (_confirmations < 7)
+                Status = BbqStatus.PendingConfirmations;
+        }
+
+        internal void When(InviteWasAccepted @event)
+        {
+            if (BbqCart is null)
+                BbqCart = new BbqCart(@event.InviteId);
+
+            BbqCart.IncreaseQuantitiesByIsVeg(@event.IsVeg);
+            ConfirmedPeople.Add(@event.PersonId);
+
+            if (_confirmations >= 7)
+                Status = BbqStatus.Confirmed;
         }
 
         public object TakeSnapshot()
