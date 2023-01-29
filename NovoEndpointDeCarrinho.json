@@ -1,0 +1,50 @@
+{
+	"info": {
+		"_postman_id": "692e6fc3-d0bf-45ed-9ba4-ef347aecd18a",
+		"name": "Endpoint para validar o carrinho de compras",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "14391424"
+	},
+	"item": [
+		{
+			"name": "Qual vai ser o cardápio?",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "personId",
+						"value": "{{moderador-1}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:7296/api/churras/{{bbqId}}/cart",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "7296",
+					"path": [
+						"api",
+						"churras",
+						"{{bbqId}}",
+						"cart"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
