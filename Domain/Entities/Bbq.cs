@@ -40,7 +40,10 @@ namespace Domain.Entities
                 BbqCart = new BbqCart(@event.InviteId);
 
             if (ConfirmedPeople.Any(w => w.Equals(@event.PersonId)))
+            {
+                ConfirmedPeople.Remove(@event.PersonId);
                 BbqCart.DecreaseQuantitiesByIsVeg(@event.IsVeg);
+            }
 
             if (_confirmations < 7)
                 Status = BbqStatus.PendingConfirmations;
