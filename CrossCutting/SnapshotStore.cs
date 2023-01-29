@@ -1,4 +1,5 @@
-﻿using Microsoft.Azure.Cosmos;
+﻿using CrossCutting.Interfaces;
+using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace CrossCutting
 {
+    //public class SnapshotStore : ISnapshotStore
     public class SnapshotStore
     {
         private readonly Database _database;
-
         public SnapshotStore(Database database)
         {
             _database = database;
@@ -17,6 +18,10 @@ namespace CrossCutting
 
         public IQueryable<T> AsQueryable<T>(string collection)
             => _database.GetContainer(collection).GetItemLinqQueryable<T>();
+
+        public virtual async Task<T> SingleOrDefaultCollection<T>(string collection)
+            => await _database.GetContainer(collection).GetItemLinqQueryable<T>()
+                                                       .SingleOrDefaultAsync();
     }
 
     public static class SnapshotStoreExtensions

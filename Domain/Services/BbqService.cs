@@ -1,4 +1,5 @@
 ﻿using CrossCutting;
+using CrossCutting.Interfaces;
 using Domain.Common;
 using Domain.Entities;
 using Domain.Enums;
@@ -12,12 +13,12 @@ using System.Threading.Tasks;
 
 namespace Domain.Services
 {
-    internal class BbqService : IBbqService
+    /// Deixei public para realizar os testes, sem os testes poderia ser trocado para internal para não ser possível acessar de fora do Domain.
+    public class BbqService : IBbqService
     {
         private readonly IBbqRepository _bbqRepository;
         private readonly IPersonService _personService;
         private readonly SnapshotStore _snapshots;
-
         public BbqService(IBbqRepository bbqRepository, IPersonService personService, SnapshotStore snapshots)
         {
             _bbqRepository = bbqRepository;
@@ -41,7 +42,8 @@ namespace Domain.Services
 
             await _bbqRepository.SaveAsync(bbq);
 
-            var lookups = await _snapshots.AsQueryable<Lookups>("Lookups").SingleOrDefaultAsync();
+            //var lookups = await _snapshots.AsQueryable<Lookups>("Lookups").SingleOrDefaultAsync();
+            var lookups = await _snapshots.SingleOrDefaultCollection<Lookups>("Lookups");
             foreach (var personId in lookups.ModeratorIds)
             {
                 await _personService.InvitePersonToBbq(personId, bbq);
@@ -115,17 +117,16 @@ namespace Domain.Services
                 return new Response($"Barbecue with Id {bbqId} couldn't be found.", false);
 
             bbq.Apply(new BbqStatusUpdated(gonnaHappen, isTrincaPaying));
-
-            if (gonnaHappen)
-            {
-                var lookups = await _snapshots.AsQueryable<Lookups>("Lookups").SingleOrDefaultAsync();
-                foreach (var personId in lookups.PeopleIds.Except(lookups.ModeratorIds))
-                {
-                    await _personService.InvitePersonToBbq(personId, bbq);
-                }
-            }
-
             await _bbqRepository.SaveAsync(bbq);
+
+            if (!gonnaHappen)
+                return new Response($"Barbecue was successfully canceled.", true, bbq.TakeSnapshot());
+
+            var lookups = await _snapshots.SingleOrDefaultCollection<Lookups>("Lookups");
+            foreach (var personId in lookups.PeopleIds.Except(lookups.ModeratorIds))
+            {
+                await _personService.InvitePersonToBbq(personId, bbq);
+            }
 
             return new Response($"Members were successfully invited to barbecue.", true, bbq.TakeSnapshot());
         }

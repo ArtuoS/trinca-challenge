@@ -7,7 +7,8 @@ using System.Threading.Tasks;
 
 namespace Domain.Services
 {
-    internal class PersonService : IPersonService
+    /// Deixei public para realizar os testes, sem os testes poderia ser trocado para internal para não ser possível acessar de fora do Domain.
+    public class PersonService : IPersonService
     {
         private readonly IPersonRepository _personRepository;
         public PersonService(IPersonRepository personRepository)
@@ -57,7 +58,7 @@ namespace Domain.Services
             person.Apply(@event);
             await _personRepository.SaveAsync(person);
 
-            return new Response($"Invite accepted successfully.", true, person.TakeSnapshot());
+            return new Response($"Invite accepted handled.", true, person.TakeSnapshot());
         }
     }
 }

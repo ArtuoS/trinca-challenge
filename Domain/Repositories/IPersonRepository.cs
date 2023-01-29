@@ -2,7 +2,8 @@
 
 namespace Domain.Repositories
 {
-    internal interface IPersonRepository : IStreamRepository<Person>
+    /// Deixei public para realizar os testes, sem os testes poderia ser trocado para internal para não ser possível acessar de fora do Domain.
+    public interface IPersonRepository : IStreamRepository<Person>
     {
     }
 }

@@ -1,4 +1,5 @@
 ﻿using CrossCutting;
+using CrossCutting.Interfaces;
 using Domain.Entities;
 using Domain.Events;
 using Domain.Repositories;
@@ -70,7 +71,7 @@ namespace Domain
 
         public static IServiceCollection AddServicesDependencies(this IServiceCollection services)
             => services.AddTransient<IBbqService, BbqService>()
-            .AddTransient<IPersonService, PersonService>();
+                       .AddTransient<IPersonService, PersonService>();
 
         private static async Task CreateIfNotExists(this CosmosClient client, string database, string collection)
         {
